@@ -107,12 +107,12 @@ void doSleep() {
 
 void sendSensorData(){
  int bmpError = bme.begin(); // error 0 = no com. with bme280.
- if(bmpError == 0){ // No contact with BMP 280 sensor, set errorCode bit no.1 HIGH.
-  bitSet(errorCode,1);  // Activate bit no.1
+ if(bmpError == 0){ // No contact with BMP 280 sensor, set errorCode bit no.0 HIGH.
+  bitSet(errorCode,0);  // Activate bit no.0
   
  }
  else{  // Contact with BMP 280 Sensor, set errorCode bit no.1 LOW
-    bitClear(errorCode,1);  // Deactivate bit no.1
+    bitClear(errorCode,0);  // Deactivate bit no.0
  }
   Serial.print("id:A01,e:" + String(errorCode));
   delay(100);
