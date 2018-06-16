@@ -12,7 +12,7 @@
 
 #define sleepTimeHours 0
 #define sleepTimeMinutes 0
-#define sleepTimeSeconds 4
+#define sleepTimeSeconds 10
 
 #define temperature true
 #define humidity true
@@ -30,11 +30,9 @@ struct WeatherStation {
 };
 
 Adafruit_BME280 bme; // I2C
-
 #define ledPin 3
 #define powerRadio 7
 #define powerBmeSensor 8
-int test = 0;
 
 
 void setup() {
@@ -56,7 +54,6 @@ void loop() {
   digitalWrite(powerRadio,HIGH);
   delay(100);
   sendSensorData();
-  //Serial.println("Hello world");
   delay(1000);
   digitalWrite(ledPin,LOW);
   digitalWrite(powerBmeSensor,LOW);
@@ -84,9 +81,11 @@ void doSleep() {
   #if sleepTimeHours < 0
     #error sleepTimeHours is negative, must be positive!
   #endif 
-      for (int s = 0; s < sleepTimeSeconds; s++) {
+
+  long secondsToSleep = (sleepTimeSeconds) + (sleepTimeMinutes*60) + (sleepTimeHours*3600);
+  for (long s = 0; s < secondsToSleep; s++) {
         LowPower.powerDown(SLEEP_1S, ADC_OFF, BOD_OFF);
-      }
+      } 
 }
 
 void sendSensorData(){
