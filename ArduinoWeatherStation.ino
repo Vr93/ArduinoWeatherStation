@@ -22,6 +22,7 @@
 //============================= Variables ===================================
 //===========================================================================
 
+int errorCode;
 struct WeatherStation {
   String id;
   float temp;
@@ -30,7 +31,8 @@ struct WeatherStation {
 };
 
 Adafruit_BME280 bme; // I2C
-#define ledPin 3
+#define ledPinRed 2
+#define ledPinGreen 3
 #define powerRadio 7
 #define powerBmeSensor 8
 
@@ -38,7 +40,8 @@ Adafruit_BME280 bme; // I2C
 void setup() {
   Serial.begin(9600);
   Wire.begin();
-  pinMode(ledPin,OUTPUT);
+  pinMode(ledPinRed,OUTPUT);
+  pinMode(ledPinGreen,OUTPUT);
   pinMode(powerRadio,OUTPUT);
   pinMode(powerBmeSensor,OUTPUT);
 
@@ -49,19 +52,33 @@ void loop() {
 //===========================================================================
 //============================= Start Code  =================================
 //===========================================================================
-  digitalWrite(ledPin,HIGH);
+  turnOnLed();
   digitalWrite(powerBmeSensor,HIGH);
   digitalWrite(powerRadio,HIGH);
   delay(100);
   sendSensorData();
   delay(1000);
-  digitalWrite(ledPin,LOW);
+  turnOffLed();
   digitalWrite(powerBmeSensor,LOW);
   digitalWrite(powerRadio,LOW);
 
 //===========================================================================
 //============================= End Code ====================================
 //===========================================================================
+}
+
+void turnOnLed(){
+  if(errorCode > 0){  // Turn on the RED LED if there is an error.
+    digitalWrite(ledPinRed,HIGH);
+  }
+  else{               // If no error, turn on the GREEN LED.
+    digitalWrite(ledPinGreen,HIGH);
+  }
+}
+
+void turnOffLed(){
+  digitalWrite(ledPinGreen,LOW);
+  digitalWrite(ledPinRed,LOW);
 }
 
 
@@ -89,22 +106,34 @@ void doSleep() {
 }
 
 void sendSensorData(){
- int error = bme.begin(); // error 0 = no com. with bme280.
-  Serial.print("id:A01,e:" + String(error));
+ int bmpError = bme.begin(); // error 0 = no com. with bme280.
+ if(bmpError == 0){ // No contact with BMP 280 sensor, set errorCode bit no.1 HIGH.
+  bitSet(errorCode,1);  // Activate bit no.1
+  
+ }
+ else{  // Contact with BMP 280 Sensor, set errorCode bit no.1 LOW
+    bitClear(errorCode,1);  // Deactivate bit no.1
+ }
+  Serial.print("id:A01,e:" + String(errorCode));
   delay(100);
-  if( temperature && (error > 0) ){
+  
+  if( temperature && (bmpError > 0) ){
   Serial.print("id:A01,t:" + String(bme.readTemperature()));
   delay(100);
   }
-  if( humidity && (error > 0) ){
+  
+  if( humidity && (bmpError > 0) ){
     Serial.print("id:A01,h:" + String(bme.readHumidity()));
   delay(100);
   }
-  if( pressure && (error > 0) ){
+  
+  if( pressure && (bmpError > 0) ){
     float bme280_pressure = bme.readPressure()/100.0F;
     Serial.print("id:A01,p:" + String(bme280_pressure));
    delay(100);
   }
+
+  
   
 
 }
