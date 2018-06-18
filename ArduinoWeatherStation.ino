@@ -18,6 +18,12 @@
 #define humidity true
 #define pressure true
 
+const String deviceId = "A01";
+
+#define batteryAlarm true
+#define batteryAlarmVoltage 3.3 // voltage
+#define batteryCalibration 1.6
+
 //===========================================================================
 //============================= Variables ===================================
 //===========================================================================
@@ -37,6 +43,9 @@ Adafruit_BME280 bme; // I2C
 #define powerBmeSensor 8
 
 
+//===========================================================================
+//============================== SETUP ======================================
+//===========================================================================
 void setup() {
   Serial.begin(9600);
   Wire.begin();
@@ -47,11 +56,12 @@ void setup() {
 
 }
 
-void loop() {
-  doSleep();  // After finished loop, put all system to sleep.
 //===========================================================================
 //============================= Start Code  =================================
 //===========================================================================
+void loop() {
+  /*doSleep();  // After finished loop, put all system to sleep.
+
   turnOnLed();
   digitalWrite(powerBmeSensor,HIGH);
   digitalWrite(powerRadio,HIGH);
@@ -60,13 +70,19 @@ void loop() {
   delay(1000);
   turnOffLed();
   digitalWrite(powerBmeSensor,LOW);
-  digitalWrite(powerRadio,LOW);
-
+  digitalWrite(powerRadio,LOW);*/
+  delay(1000);
+  readBatteryVoltage();
+  delay(1000);
+}
 //===========================================================================
 //============================= End Code ====================================
 //===========================================================================
-}
 
+
+//===========================================================================
+//============================= LED CONTROL =================================
+//===========================================================================
 void turnOnLed(){
   if(errorCode > 0){  // Turn on the RED LED if there is an error.
     digitalWrite(ledPinRed,HIGH);
@@ -81,7 +97,25 @@ void turnOffLed(){
   digitalWrite(ledPinRed,LOW);
 }
 
+//===========================================================================
+//========================= Battery Measurement =============================
+//===========================================================================
+void readBatteryVoltage(){
+  if(batteryAlarm){   // Battery check enabled
+      
+      int sensorValue = analogRead(A0);
+      float voltage = batteryCalibration * sensorValue * (5.0 / 1023.0);
+      Serial.print("voltage: ");
+      Serial.println(voltage);
+      /*if(batteryAlarmVoltage > voltage){
+        //ALARM
+      }*/
+  }
+}
 
+//===========================================================================
+//=============================== SLEEP =====================================
+//===========================================================================
 void doSleep() {
   #if sleepTimeSeconds > 60
     #error sleepTimeSeconds is greater than 60!
@@ -105,6 +139,11 @@ void doSleep() {
       } 
 }
 
+
+//===========================================================================
+//============================= SEND DATA ===================================
+//===========================================================================
+
 void sendSensorData(){
  int bmpError = bme.begin(); // error 0 = no com. with bme280.
  if(bmpError == 0){ // No contact with BMP 280 sensor, set errorCode bit no.0 HIGH.
@@ -114,27 +153,23 @@ void sendSensorData(){
  else{  // Contact with BMP 280 Sensor, set errorCode bit no.1 LOW
     bitClear(errorCode,0);  // Deactivate bit no.0
  }
-  Serial.print("id:A01,e:" + String(errorCode));
+  Serial.print("id:" + deviceId + ",e:" + String(errorCode));
   delay(100);
   
   if( temperature && (bmpError > 0) ){
-  Serial.print("id:A01,t:" + String(bme.readTemperature()));
+  Serial.print("id:" + deviceId + ",t:" + String(bme.readTemperature()));
   delay(100);
   }
   
   if( humidity && (bmpError > 0) ){
-    Serial.print("id:A01,h:" + String(bme.readHumidity()));
+    Serial.print("id:" + deviceId + ",h:" + String(bme.readHumidity()));
   delay(100);
   }
   
   if( pressure && (bmpError > 0) ){
     float bme280_pressure = bme.readPressure()/100.0F;
-    Serial.print("id:A01,p:" + String(bme280_pressure));
+    Serial.print("id:" + deviceId + ",p:" + String(bme280_pressure));
    delay(100);
   }
-
-  
-  
-
 }
 
