@@ -11,8 +11,8 @@
 //===========================================================================
 
 #define sleepTimeHours 0
-#define sleepTimeMinutes 0
-#define sleepTimeSeconds 10
+#define sleepTimeMinutes 10
+#define sleepTimeSeconds 0
 
 #define temperature true
 #define humidity true
@@ -23,6 +23,7 @@ const String deviceId = "A01";
 #define batteryAlarm true
 #define batteryAlarmVoltage 3.3 // voltage
 #define batteryCalibration 1.6
+
 
 //===========================================================================
 //============================= Variables ===================================
@@ -60,8 +61,7 @@ void setup() {
 //============================= Start Code  =================================
 //===========================================================================
 void loop() {
-  /*doSleep();  // After finished loop, put all system to sleep.
-
+  doSleep();  // After finished loop, put all system to sleep.
   turnOnLed();
   digitalWrite(powerBmeSensor,HIGH);
   digitalWrite(powerRadio,HIGH);
@@ -70,10 +70,8 @@ void loop() {
   delay(1000);
   turnOffLed();
   digitalWrite(powerBmeSensor,LOW);
-  digitalWrite(powerRadio,LOW);*/
-  delay(1000);
-  readBatteryVoltage();
-  delay(1000);
+  digitalWrite(powerRadio,LOW);
+
 }
 //===========================================================================
 //============================= End Code ====================================
@@ -95,22 +93,6 @@ void turnOnLed(){
 void turnOffLed(){
   digitalWrite(ledPinGreen,LOW);
   digitalWrite(ledPinRed,LOW);
-}
-
-//===========================================================================
-//========================= Battery Measurement =============================
-//===========================================================================
-void readBatteryVoltage(){
-  if(batteryAlarm){   // Battery check enabled
-      
-      int sensorValue = analogRead(A0);
-      float voltage = batteryCalibration * sensorValue * (5.0 / 1023.0);
-      Serial.print("voltage: ");
-      Serial.println(voltage);
-      /*if(batteryAlarmVoltage > voltage){
-        //ALARM
-      }*/
-  }
 }
 
 //===========================================================================
